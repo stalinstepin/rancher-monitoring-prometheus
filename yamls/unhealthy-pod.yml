@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: unhealthy-dummy-pod2
+spec:
+  containers:
+    - name: dummy-pod
+      image: ubuntu
+  restartPolicy: Always
+  nodeSelector:
+    disktype: ssd

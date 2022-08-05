@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: crashloop-dummy-pod3
+spec:
+  containers:
+    - name: dummy-pod3
+      image: ubuntu
+  restartPolicy: Always

@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: example-app
+  labels:
+    team: frontend
+  namespace: cattle-monitoring-system
+spec:
+  namespaceSelector:
+    matchNames: 
+    - cattle-monitoring-system
+  selector:
+    matchLabels:
+      app: example-app
+  podMetricsEndpoints:
+  - targetPort: 8080

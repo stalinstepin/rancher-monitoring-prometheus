@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: servicemonitor-app
+  labels:
+    app: servicemonitor-app
+  namespace: cattle-monitoring-system
+spec:
+  selector:
+    app: servicemonitor-app
+  ports:
+  - name: web
+    port: 8080
