@@ -240,7 +240,7 @@ ServiceMonitors on the other hand are typically used when the workloads use a se
 
 Once you have the workload and service running, you can create a Service Monitor to scrape metrics from the service. 
 
-```yaml
+`
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -258,7 +258,7 @@ spec:
   endpoints:
   - port: web
 
-```
+`
 
 You can use the similar approach that you used for Pod Monitors to view the graph for Service Monitors. Here, I am using the below query to get metrics for the application for which Service Monitors are configured. 
 
@@ -292,3 +292,103 @@ Let's choose an existing dashboard `Rancher / Workloads (Pods)` to view the metr
 ![](assets/images/RancherWorkload.png)
 
 
+
+# Alertmanager Webhook Receivers
+
+For notification mechanisms not natively supported by the Alertmanager, the webhook receiver allows for integration. 
+
+We will make use of **`Alerting Drivers`** to tell Alert manager to send alerts to notification mechanisms. In this section, we use Telegram bot as our receiver. 
+
+- To start of, we need to first install the Alerting Drivers. Head over to `Apps & Marketplace` > `Charts` and click on `Alerting Drivers`. You will see the landing page where you can choose the chart version and hit `Install`.
+
+![](assets/images/AlertingDriversChart.png)
+
+- Once you hit the install button, choose a namespace to install the chart. Also, hit the `Customize helm options before install` option to see more options to enable webhook receivers. For Telegram to work, you need to check the `Enable SMS` option from the list of available options. 
+
+- Once enabled, proceed with installing the app with other default values. 
+Ensure that the installation completed successfully. 
+
+Upon successfull installation of the Alerting Driver chart, you should be able to see a configmap in the namespace where you deployed the chart with name `rancher-alerting-drivers-sachet`. This is the configmap where you configure details for Telegram like `providers`, `templates` and `receivers`.
+
+Below is a sample of the configuration that I have added to my `config.yaml` file after removing the defaults:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rancher-alerting-drivers-sachet
+  annotations:
+    helm.sh/hook: pre-install, pre-upgrade
+    helm.sh/hook-weight: '3'
+    helm.sh/resource-policy: keep
+  creationTimestamp: '2022-07-18T17:41:16Z'
+  labels:
+    app.kubernetes.io/instance: rancher-alerting-drivers
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: sachet
+    app.kubernetes.io/version: 0.2.6
+    helm.sh/chart: sachet-1.0.1
+  namespace: cattle-monitoring-system
+  resourceVersion: '68792'
+  uid: e3f01a04-12e5-46ad-83d9-a40bb7eb3045
+  fields:
+    - rancher-alerting-drivers-sachet
+    - 3h4m
+binaryData:
+  notifications.tmpl: >-
+    e3sgZGVmaW5lICJ0ZWxlZ3JhbV90aXRsZSIgfX1be3sgLlN0YXR1cyB8IHRvVXBwZXIgfX17eyBpZiBlcSAuU3RhdHVzICJmaXJpbmciIH19Ont7IC5BbGVydHMuRmlyaW5nIHwgbGVuIH19e3sgZW5kIH19XSB7eyAuQ29tbW9uTGFiZWxzLmFsZXJ0bmFtZSB9fSBAIHt7IC5Db21tb25MYWJlbHMuaWRlbnRpZmllciB9fSB7eyBlbmQgfX0KCnt7IGRlZmluZSAidGVsZWdyYW1fbWVzc2FnZSIgfX0Ke3sgaWYgZ3QgKGxlbiAuQWxlcnRzLkZpcmluZykgMCB9fQoqQWxlcnRzIEZpcmluZzoqCnt7IHJhbmdlIC5BbGVydHMuRmlyaW5nIH194oCiIHt7IC5MYWJlbHMuaW5zdGFuY2UgfX06IHt7IC5Bbm5vdGF0aW9ucy5kZXNjcmlwdGlvbiB9fQp7eyBlbmQgfX17eyBlbmQgfX0Ke3sgaWYgZ3QgKGxlbiAuQWxlcnRzLlJlc29sdmVkKSAwIH19CipBbGVydHMgUmVzb2x2ZWQ6Kgp7eyByYW5nZSAuQWxlcnRzLlJlc29sdmVkIH194oCiIHt7IC5MYWJlbHMuaW5zdGFuY2UgfX06IHt7IC5Bbm5vdGF0aW9ucy5kZXNjcmlwdGlvbiB9fQp7eyBlbmQgfX17eyBlbmQgfX17eyBlbmQgfX0KCnt7IGRlZmluZSAidGVsZWdyYW1fdGV4dCIgfX17eyB0ZW1wbGF0ZSAidGVsZWdyYW1fdGl0bGUiIC59fQp7eyB0ZW1wbGF0ZSAidGVsZWdyYW1fbWVzc2FnZSIgLiB9fXt7IGVuZCB9fQ==
+data:
+  config.yaml: |-
+    providers:
+      telegram:
+        token: 'xxxxxxxxxx'
+  
+    templates:
+    - /etc/sachet/notifications.tmpl
+  
+    receivers:
+    - name: 'telegram-receiver-1'
+      provider: 'telegram'
+      to:
+        - 'yyyyyyyyy'
+      text: '{{ template "telegram_message" . }}'
+__clone: true
+```
+
+- In the `providers.telegram.token`, you need to add your telegram token from your Telegram account. If you like to know on how to get your telegram token, click of the following ![link]().
+- In the `receivers.to` field, you need to pass the chat ID of the user. If you like to know on how to get your your chat ID, click of the following ![link]().
+- Replace the values from the above template with the one's that you have from your Telegram account. When you have added all the details save the file.
+
+### **Configuring Receiver:**
+
+We will now create a receiver which will send alerts to Telegram using the configurations provided above. 
+
+- Head over to `Monitoring` from the left pane after clicking on the hamburger button on the left top > `Routes and Receivers`.
+- Select `Webhook`.
+- Give the receiver a name and `Add Webhook` of type `SMS`.
+
+![](assets/images/AlertingDriverReceiver.png)
+
+ **NOTE**: The name that you provider for the receiver should match `data.receiver.name` of the  `rancher-alerting-drivers-sachet` configmap.
+
+- When the Webhook type is selected as SMS, you need to provide a URL that points to the Alerting Driver workload from the namespace it was deployed in the below format:
+
+> `http://rancher-alerting-drivers-sachet.ns-1.svc:9876/alert` 
+
+- Once all the configurations are in place, you can hit the `Create` option.
+
+From here, you can configure a route with an alert to this receiver and you should start seeing the alerts in your Telegram app. 
+
+## **Troubleshooting**
+
+If you do not see any alerts on your telegram app, check your alerting driver pod running on the namespace where you deployed it. 
+
+```bash
+$ kubectl logs -n cattle-monitoring-system rancher-alerting-drivers-sachet-5499d97b58-ngwc7  sachet -f --tail=10
+2022/08/16 17:58:36 main.go:157: Listening on :9876
+2022/08/16 18:29:29 main.go:139: Loading configuration file /etc/sachet/config.yaml
+2022/08/16 18:30:31 main.go:139: Loading configuration file /etc/sachet/config.yaml
+2022/08/16 20:33:05 main.go:247: Error: {"Error":true,"Status":400,"Message":"Receiver missing: telegram-receiver-1"}
+2022/08/16 20:33:15 main.go:247: Error: {"Error":true,"Status":400,"Message":"Receiver missing: telegram-receiver-1"}
+2022/08/16 20:33:25 main.go:247: Error: {"Error":true,"Status":400,"Message":"Receiver missing: telegram-receiver-1"}
+```
