@@ -310,49 +310,18 @@ Ensure that the installation completed successfully.
 
 Upon successfull installation of the Alerting Driver chart, you should be able to see a configmap in the namespace where you deployed the chart with name `rancher-alerting-drivers-sachet`. This is the configmap where you configure details for Telegram like `providers`, `templates` and `receivers`.
 
-Below is a sample of the configuration that I have added to my `config.yaml` file after removing the defaults:
+Below is a sample of the basic configuration that I have added to my `config.yaml` file after removing the defaults:
 
 ```yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: rancher-alerting-drivers-sachet
-  annotations:
-    helm.sh/hook: pre-install, pre-upgrade
-    helm.sh/hook-weight: '3'
-    helm.sh/resource-policy: keep
-  creationTimestamp: '2022-07-18T17:41:16Z'
-  labels:
-    app.kubernetes.io/instance: rancher-alerting-drivers
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: sachet
-    app.kubernetes.io/version: 0.2.6
-    helm.sh/chart: sachet-1.0.1
-  namespace: cattle-monitoring-system
-  resourceVersion: '68792'
-  uid: e3f01a04-12e5-46ad-83d9-a40bb7eb3045
-  fields:
-    - rancher-alerting-drivers-sachet
-    - 3h4m
-binaryData:
-  notifications.tmpl: >-
-    e3sgZGVmaW5lICJ0ZWxlZ3JhbV90aXRsZSIgfX1be3sgLlN0YXR1cyB8IHRvVXBwZXIgfX17eyBpZiBlcSAuU3RhdHVzICJmaXJpbmciIH19Ont7IC5BbGVydHMuRmlyaW5nIHwgbGVuIH19e3sgZW5kIH19XSB7eyAuQ29tbW9uTGFiZWxzLmFsZXJ0bmFtZSB9fSBAIHt7IC5Db21tb25MYWJlbHMuaWRlbnRpZmllciB9fSB7eyBlbmQgfX0KCnt7IGRlZmluZSAidGVsZWdyYW1fbWVzc2FnZSIgfX0Ke3sgaWYgZ3QgKGxlbiAuQWxlcnRzLkZpcmluZykgMCB9fQoqQWxlcnRzIEZpcmluZzoqCnt7IHJhbmdlIC5BbGVydHMuRmlyaW5nIH194oCiIHt7IC5MYWJlbHMuaW5zdGFuY2UgfX06IHt7IC5Bbm5vdGF0aW9ucy5kZXNjcmlwdGlvbiB9fQp7eyBlbmQgfX17eyBlbmQgfX0Ke3sgaWYgZ3QgKGxlbiAuQWxlcnRzLlJlc29sdmVkKSAwIH19CipBbGVydHMgUmVzb2x2ZWQ6Kgp7eyByYW5nZSAuQWxlcnRzLlJlc29sdmVkIH194oCiIHt7IC5MYWJlbHMuaW5zdGFuY2UgfX06IHt7IC5Bbm5vdGF0aW9ucy5kZXNjcmlwdGlvbiB9fQp7eyBlbmQgfX17eyBlbmQgfX17eyBlbmQgfX0KCnt7IGRlZmluZSAidGVsZWdyYW1fdGV4dCIgfX17eyB0ZW1wbGF0ZSAidGVsZWdyYW1fdGl0bGUiIC59fQp7eyB0ZW1wbGF0ZSAidGVsZWdyYW1fbWVzc2FnZSIgLiB9fXt7IGVuZCB9fQ==
-data:
-  config.yaml: |-
-    providers:
-      telegram:
-        token: 'xxxxxxxxxx'
-  
-    templates:
-    - /etc/sachet/notifications.tmpl
-  
-    receivers:
-    - name: 'telegram-receiver-1'
-      provider: 'telegram'
-      to:
-        - 'yyyyyyyyy'
-      text: '{{ template "telegram_message" . }}'
-__clone: true
+providers:
+  telegram:
+    token: 'xxxxxx'
+
+receivers:
+  - name: 'telegram-receiver-1'
+    provider: 'telegram'
+    to:
+      - 'yyyyyy'
 ```
 
 - In the `providers.telegram.token`, you need to add your telegram token from your Telegram account. If you like to know on how to get your telegram token, click of the following ![link]().
@@ -369,15 +338,17 @@ We will now create a receiver which will send alerts to Telegram using the confi
 
 ![](assets/images/AlertingDriverReceiver.png)
 
- **NOTE**: The name that you provider for the receiver should match `data.receiver.name` of the  `rancher-alerting-drivers-sachet` configmap.
+ **NOTE**: The name that you provider for the receiver should match `receivers.name` of the  `rancher-alerting-drivers-sachet` configmap.
 
-- When the Webhook type is selected as SMS, you need to provide a URL that points to the Alerting Driver workload from the namespace it was deployed in the below format:
+- When the Webhook type is selected as SMS, the receiver should automatically be able to pick the URL which would point to the alerting drivers like the one below:
 
 > `http://rancher-alerting-drivers-sachet.ns-1.svc:9876/alert` 
 
 - Once all the configurations are in place, you can hit the `Create` option.
 
-From here, you can configure a route with an alert to this receiver and you should start seeing the alerts in your Telegram app. 
+From here, you can configure a route with an alert to this receiver and you should start seeing the alerts in your Telegram app like the one below.
+
+![](assets/images/TelegramAlerts.png)
 
 ## **Troubleshooting**
 
@@ -392,3 +363,18 @@ $ kubectl logs -n cattle-monitoring-system rancher-alerting-drivers-sachet-5499d
 2022/08/16 20:33:15 main.go:247: Error: {"Error":true,"Status":400,"Message":"Receiver missing: telegram-receiver-1"}
 2022/08/16 20:33:25 main.go:247: Error: {"Error":true,"Status":400,"Message":"Receiver missing: telegram-receiver-1"}
 ```
+
+```bash
+$ kubectl logs rancher-alerting-drivers-sachet-5499d97b58-vmjns sachet --tail=10 -f                                   stalin@Stalins-MacBook-Pro
+2022/08/21 17:32:50 main.go:247: Error: {"Error":true,"Status":400,"Message":"Bad Request: message must be non-empty"}
+2022/08/21 17:33:00 main.go:247: Error: {"Error":true,"Status":400,"Message":"Bad Request: message must be non-empty"}
+```
+
+```bash
+$ kubectl logs -n cattle-monitoring-system alertmanager-rancher-monitoring-alertmanager-0 alertmanager --tail=10 -f 
+level=debug ts=2022-08-21T17:04:40.323Z caller=dispatch.go:138 component=dispatcher msg="Received alert" alert=unhealthy-pod[b8f5456][active]
+level=debug ts=2022-08-21T17:04:50.324Z caller=dispatch.go:475 component=dispatcher aggrGroup="{}/{alertname=\"unhealthy-pod\"}:{}" msg=flushing alerts=[unhealthy-pod[b8f5456][active]]
+level=error ts=2022-08-21T17:04:50.329Z caller=dispatch.go:310 component=dispatcher msg="Notify for alerts failed" num_alerts=1 err="telegram-receiver-1/webhook[0]: notify retry canceled due to unrecoverable error after 1 attempts: unexpected status code 400: http://rancher-alerting-drivers-sachet.cattle-monitoring-system.svc:9876/alert"
+```
+
+The above error message indicates misconfiguration with the alerting drivers configmap resource.
