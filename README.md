@@ -350,6 +350,50 @@ From here, you can configure a route with an alert to this receiver and you shou
 
 ![](assets/images/TelegramAlerts.png)
 
+### **Templating**
+
+If you would like to customize your alerting template, you can achive this by adding parameters to the `config.yaml` file and adding a new key to the configmap.
+The new config.yaml would look like:
+
+```yaml
+providers:
+  telegram:
+    token: 'xxxxxx'
+templates:
+  - /etc/sachet/notifications.tmpl
+receivers:
+  - name: 'telegram-receiver-1'
+    provider: 'telegram'
+    to:
+      - 'yyyyyy'
+    text: '{{ template "telegram_message" . }}'
+```
+
+You also need to add a new key value pair to the configmap with key being `notifications.tmpl` and the value provided below:
+
+```jinja
+{{ define "telegram_title" }}[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }} @ {{ .CommonLabels.identifier }} {{ end }}
+
+{{ define "telegram_message" }}
+{{ if gt (len .Alerts.Firing) 0 }}
+*Alerts Firing:*
+{{ range .Alerts.Firing }}• {{ .Labels.instance }}: {{ .Annotations.description }}
+{{ end }}{{ end }}
+{{ if gt (len .Alerts.Resolved) 0 }}
+*Alerts Resolved:*
+{{ range .Alerts.Resolved }}• {{ .Labels.instance }}: {{ .Annotations.description }}
+{{ end }}{{ end }}{{ end }}
+
+{{ define "telegram_text" }}{{ template "telegram_title" .}}
+{{ template "telegram_message" . }}{{ end }}
+```
+
+With this configuration, you should start seeing alerts like the one below.
+
+![](assets/images/DriverTemplating.png)
+
+> NOTE: You should have configured the prometheus rule with description and messages so that you receive the same in the template section on telegram when the alerts are fired. 
+
 ## **Troubleshooting**
 
 If you do not see any alerts on your telegram app, check your alerting driver pod running on the namespace where you deployed it. 
