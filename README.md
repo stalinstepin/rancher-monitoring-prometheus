@@ -409,7 +409,7 @@ $ kubectl logs -n cattle-monitoring-system rancher-alerting-drivers-sachet-5499d
 ```
 
 ```bash
-$ kubectl logs rancher-alerting-drivers-sachet-5499d97b58-vmjns sachet --tail=10 -f                                   stalin@Stalins-MacBook-Pro
+$ kubectl logs rancher-alerting-drivers-sachet-5499d97b58-vmjns sachet --tail=10 -f                                   
 2022/08/21 17:32:50 main.go:247: Error: {"Error":true,"Status":400,"Message":"Bad Request: message must be non-empty"}
 2022/08/21 17:33:00 main.go:247: Error: {"Error":true,"Status":400,"Message":"Bad Request: message must be non-empty"}
 ```
@@ -422,6 +422,7 @@ level=error ts=2022-08-21T17:04:50.329Z caller=dispatch.go:310 component=dispatc
 ```
 
 ```text
+$ kubectl logs rancher-alerting-drivers-sachet-5499d97b58-vmjns sachet --tail=10 -f  
 2022/08/21 18:58:14 server.go:3159: http: panic serving 10.42.1.20:47006: runtime error: invalid memory address or nil pointer dereference
 goroutine 5864 [running]:
 net/http.(*conn).serve.func1()
