@@ -421,4 +421,27 @@ level=debug ts=2022-08-21T17:04:50.324Z caller=dispatch.go:475 component=dispatc
 level=error ts=2022-08-21T17:04:50.329Z caller=dispatch.go:310 component=dispatcher msg="Notify for alerts failed" num_alerts=1 err="telegram-receiver-1/webhook[0]: notify retry canceled due to unrecoverable error after 1 attempts: unexpected status code 400: http://rancher-alerting-drivers-sachet.cattle-monitoring-system.svc:9876/alert"
 ```
 
+```text
+2022/08/21 18:58:14 server.go:3159: http: panic serving 10.42.1.20:47006: runtime error: invalid memory address or nil pointer dereference
+goroutine 5864 [running]:
+net/http.(*conn).serve.func1()
+	/usr/local/go/src/net/http/server.go:1801 +0xb9
+panic({0xa5af00, 0x1154580})
+	/usr/local/go/src/runtime/panic.go:1047 +0x266
+github.com/prometheus/alertmanager/template.(*Template).ExecuteTextString(0xad1f00, {0xc00003a5d0, 0xc0002d0900}, {0xad1f00, 0xc0000845a0})
+	/build/vendor/github.com/prometheus/alertmanager/template/template.go:94 +0x56
+main.main.func1({0xcafb68, 0xc00013e460}, 0xc000100d00)
+	/build/cmd/sachet/main.go:84 +0x4c5
+net/http.HandlerFunc.ServeHTTP(0x0, {0xcafb68, 0xc00013e460}, 0xc00013e460)
+	/usr/local/go/src/net/http/server.go:2046 +0x2f
+net/http.(*ServeMux).ServeHTTP(0x0, {0xcafb68, 0xc00013e460}, 0xc000100d00)
+	/usr/local/go/src/net/http/server.go:2424 +0x149
+net/http.serverHandler.ServeHTTP({0xcae908}, {0xcafb68, 0xc00013e460}, 0xc000100d00)
+	/usr/local/go/src/net/http/server.go:2878 +0x43b
+net/http.(*conn).serve(0xc00031e640, {0xcb2f58, 0xc00014d7a0})
+	/usr/local/go/src/net/http/server.go:1929 +0xb08
+created by net/http.(*Server).Serve
+	/usr/local/go/src/net/http/server.go:3033 +0x4e8
+```
+
 The above error message indicates misconfiguration with the alerting drivers configmap resource.
