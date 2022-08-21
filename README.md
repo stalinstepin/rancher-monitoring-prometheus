@@ -299,6 +299,7 @@ For notification mechanisms not natively supported by the Alertmanager, the webh
 
 We will make use of **`Alerting Drivers`** to tell Alert manager to send alerts to notification mechanisms. In this section, we use Telegram bot as our receiver. 
 
+### **Configuration:**
 - To start of, we need to first install the Alerting Drivers. Head over to `Apps & Marketplace` > `Charts` and click on `Alerting Drivers`. You will see the landing page where you can choose the chart version and hit `Install`.
 
 ![](assets/images/AlertingDriversChart.png)
@@ -350,7 +351,7 @@ From here, you can configure a route with an alert to this receiver and you shou
 
 ![](assets/images/TelegramAlerts.png)
 
-### **Templating**
+### **Templating:**
 
 If you would like to customize your alerting template, you can achive this by adding parameters to the `config.yaml` file and adding a new key to the configmap.
 The new config.yaml would look like:
