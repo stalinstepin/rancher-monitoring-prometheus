@@ -392,3 +392,5 @@ $ kubectl logs -n cattle-monitoring-system rancher-alerting-drivers-sachet-5499d
 2022/08/16 20:33:15 main.go:247: Error: {"Error":true,"Status":400,"Message":"Receiver missing: telegram-receiver-1"}
 2022/08/16 20:33:25 main.go:247: Error: {"Error":true,"Status":400,"Message":"Receiver missing: telegram-receiver-1"}
 ```
+
+# Federator (Project Monitoring)
